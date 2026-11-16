@@ -17,26 +17,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-      - name: Setup Android SDK
+
+      - name: Set up Android SDK
         uses: android-actions/setup-android@v4
         with:
           packages: 'platform-tools'
-      - name: Install Android SDK
+
+      - name: Install Android SDK packages
         run: |
           sdkmanager "platforms;android-35"
           sdkmanager "build-tools;35.0.0"
 
-      - name: Setup Gradle
+      - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
 
-      - name: Create Android Project
+      - name: Create Android project
         run: |
           mkdir -p app/src/main/java/com/nasa/worldview
 
@@ -86,7 +88,7 @@ jobs:
 
           cat > app/src/main/AndroidManifest.xml <<'EOF'
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-              <uses-permission android:name="android.permission.INTERNET"/>
+              <uses-permission android:name="android.permission.INTERNET" />
 
               <application
                   android:theme="@android:style/Theme.Material.Light.NoActionBar"
@@ -98,8 +100,8 @@ jobs:
                       android:exported="true">
 
                       <intent-filter>
-                          <action android:name="android.intent.action.MAIN"/>
-                          <category android:name="android.intent.category.LAUNCHER"/>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
                       </intent-filter>
 
                   </activity>
@@ -112,14 +114,13 @@ jobs:
 
           import android.app.Activity;
           import android.os.Bundle;
-          import android.webkit.WebView;
-          import android.webkit.WebViewClient;
           import android.webkit.WebChromeClient;
           import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
 
           public class MainActivity extends Activity {
-
-              WebView webView;
+              private WebView webView;
 
               @Override
               protected void onCreate(Bundle savedInstanceState) {
@@ -136,13 +137,28 @@ jobs:
 
                   webView.setWebViewClient(new WebViewClient());
                   webView.setWebChromeClient(new WebChromeClient());
-
-                  webView.loadUrl(
-                      "https://worldview.earthdata.nasa.gov/"
-                  );
+                  webView.loadUrl("https://worldview.earthdata.nasa.gov/");
               }
-              
-                    EOF
+
+              @Override
+              public void onBackPressed() {
+                  if (webView != null && webView.canGoBack()) {
+                      webView.goBack();
+                  } else {
+                      super.onBackPressed();
+                  }
+              }
+
+              @Override
+              protected void onDestroy() {
+                  if (webView != null) {
+                      webView.destroy();
+                      webView = null;
+                  }
+                  super.onDestroy();
+              }
+          }
+          EOF
 
       - name: Build APK
         run: gradle --no-daemon assembleDebug
