@@ -142,7 +142,8 @@ jobs:
                       "https://worldview.earthdata.nasa.gov/"
                   );
               }
-          EOF
+                    EOF
+
       - name: Build APK
         run: gradle --no-daemon assembleDebug
 
@@ -152,4 +153,3 @@ jobs:
           name: NASA-Worldview-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-             
