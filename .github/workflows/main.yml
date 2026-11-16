@@ -142,6 +142,7 @@ jobs:
                       "https://worldview.earthdata.nasa.gov/"
                   );
               }
+              
                     EOF
 
       - name: Build APK
